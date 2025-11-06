@@ -33,34 +33,39 @@ const LEGAL_DOCS = [
   }
 ];
 
-// Search endpoint
-app.get('/search', (req, res) => {
-  const { query } = req.query;  // IMPORTANT: use req.query for GET
+// GET endpoint — show all or filter by query
+app.get('/', (req, res) => {
+  const { query } = req.query;
+
+  // If no query provided → return all documents
   if (!query) {
-    return res.status(400).json({ error: "Query is required" });
+    return res.json({
+      message: "Showing all documents",
+      total: LEGAL_DOCS.length,
+      results: LEGAL_DOCS
+    });
   }
+
+  // Filter if query exists
   const lower = query.toLowerCase();
   const results = LEGAL_DOCS.filter(d =>
     d.title.toLowerCase().includes(lower) ||
-    d.summary.toLowerCase().includes(lower)||
+    d.summary.toLowerCase().includes(lower) ||
     d.type.toLowerCase().includes(lower)
-  ).map(d => ({
-  id: d.id,
-  title: d.title,
-  summary: d.summary,
-  dateCreated: d.dateCreated,
-  type: d.type
-}));
-
+  );
 
   if (results.length === 0) {
     return res.status(404).json({ error: "No documents found" });
   }
-  res.json(results);
-});
 
+  res.json({
+    message: `Showing results for query: "${query}"`,
+    total: results.length,
+    results
+  });
+});
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });
